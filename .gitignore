@@ -146,8 +146,8 @@ dmypy.json
 *.bin
 *.safetensors
 
-# Data files (uncomment if you don't want to track data)
-# *.csv
+# Data files - uncommented to prevent large datasets from being tracked
+*.csv
 # *.json
 # *.parquet
 # *.feather
@@ -204,8 +204,8 @@ Thumbs.db
 # *.rar
 # *.7z
 
-# PDF files (uncomment if you don't want to track PDFs)
-# *.pdf
+# PDF files - uncommented to prevent large presentation files from being tracked
+*.pdf
 
 # Streamlit
 .streamlit/
