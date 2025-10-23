@@ -227,3 +227,16 @@ yarn-error.log*
 config.local.*
 secrets.json
 .secrets
+
+
+# JS - TS
+node_modules/
+dist/
+build/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
+.env.production
+.env
