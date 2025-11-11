@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 
 function App() {
   const [message, setMessage] = useState("");
@@ -11,7 +10,11 @@ function App() {
       });
   }, []);
 
-  return <p>{message}</p>;
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <h1 className="font-bold">{message}</h1>
+    </div>
+  );
 }
 
 export default App;
