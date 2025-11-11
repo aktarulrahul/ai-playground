@@ -1,0 +1,72 @@
+import asyncio
+import aiohttp
+import argparse
+import json
+
+async def make_request(url, method="GET", data=None):
+    async with aiohttp.ClientSession() as session:
+        if method == "GET":
+            async with session.get(url) as response:
+                return {"status": response.status, "data": await response.text()}
+        elif method == "POST":
+            async with session.post(url, json=data) as response:
+                return {"status": response.status, "data": await response.text()}
+
+async def monitor_url(url, interval=10):
+    print(f"Monitoring {url} every {interval} seconds")
+    while True:
+        try:
+            result = await make_request(url)
+            print(f"Status: {result['status']} - {url}")
+            await asyncio.sleep(interval)
+        except KeyboardInterrupt:
+            print("\nMonitoring stopped")
+            break
+        except Exception as e:
+            print(f"Error: {e}")
+            await asyncio.sleep(interval)
+
+def setup_parser():
+    parser = argparse.ArgumentParser(description="HTTP CLI App")
+    subparsers = parser.add_subparsers(dest="command")
+    
+    request_parser = subparsers.add_parser("request", help="Make HTTP request")
+    request_parser.add_argument("url", help="URL to request")
+    request_parser.add_argument("--method", default="GET", choices=["GET", "POST"])
+    request_parser.add_argument("--data", help="JSON data for POST")
+    
+    monitor_parser = subparsers.add_parser("monitor", help="Monitor URL")
+    monitor_parser.add_argument("url", help="URL to monitor")
+    monitor_parser.add_argument("--interval", type=int, default=10, help="Check interval")
+    
+    return parser
+
+async def main():
+    parser = setup_parser()
+    args = parser.parse_args()
+    
+    if not args.command:
+        parser.print_help()
+        return
+    
+    if args.command == "request":
+        data = None
+        if args.data:
+            try:
+                data = json.loads(args.data)
+            except json.JSONDecodeError:
+                print("Error: Invalid JSON data")
+                return
+        
+        try:
+            result = await make_request(args.url, args.method, data)
+            print(f"Status: {result['status']}")
+            print(f"Data: {result['data'][:200]}...")
+        except Exception as e:
+            print(f"Error: {e}")
+    
+    elif args.command == "monitor":
+        await monitor_url(args.url, args.interval)
+
+if __name__ == "__main__":
+    asyncio.run(main()) 

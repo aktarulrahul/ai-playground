@@ -1,0 +1,6 @@
+This is a sample text file.
+It contains multiple lines of text.
+You can use this file to test file reading operations.
+Line 4 of the sample file.
+Line 5 with some numbers: 123, 456, 789.
+Final line of the sample file. 
