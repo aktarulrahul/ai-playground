@@ -1,9 +1,9 @@
-import ChatBot from "./components/chat/ChatBot";
+import { ReviewList } from "./components/reviews/ReviewList";
 
 function App() {
   return (
     <div className="h-screen p-4">
-      <ChatBot />
+      <ReviewList productId={1} />
     </div>
   );
 }

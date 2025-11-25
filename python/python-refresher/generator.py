@@ -28,4 +28,30 @@ def get_coffee_generator():
 
 coffee = get_coffee_list()
 print(coffee)  # Output: ['cup 1', 'cup 2', 'cup 3', 'cup 4']
-print(next(coffee))  # Raises TypeError
+# print(next(coffee))  # Raises TypeError
+
+def coffee_refill_count():
+  count = 1
+  while True: # for loop can also be used with a predefined range
+    yield f"Refill count: {count}"
+    count += 1
+  
+refill_user_1 = coffee_refill_count()
+refill_user_2 = coffee_refill_count()
+
+# for _ in range(5):
+#   print(next(refill_user_1))
+# for _ in range(3):
+#   print(next(refill_user_2))
+
+def coffee_customers():
+  print("Welcome to the Coffee Shop!")
+  order = yield "Please place your order."
+  while True:
+    print(f"Preparing your {order}...")
+    order = yield f"Your {order} is ready!"
+
+stall = coffee_customers()
+next(stall)  # Start the generator
+print(stall.send("Espresso"))
+print(stall.send("Latte"))
