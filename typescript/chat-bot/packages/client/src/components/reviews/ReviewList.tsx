@@ -1,5 +1,7 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import StartRating from "./StartRating";
+import Skeleton from "react-loading-skeleton";
+import { useQuery } from "@tanstack/react-query";
 
 type Props = {
   productId: number;
@@ -19,22 +21,49 @@ type GetReviewsResponse = {
 };
 
 export const ReviewList = ({ productId }: Props) => {
-  const [reviewData, setReviewData] = useState<GetReviewsResponse>({
-    reviews: [],
-    summary: null,
-  });
   const fetchReviews = async () => {
-    try {
-      const { data } = await axios.get(`/api/products/${productId}/reviews`);
-      setReviewData(data);
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-    }
+    const { data } = await axios.get(`/api/products/${productId}/reviews`);
+    return data;
   };
-  useEffect(() => {
-    fetchReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  const {
+    data: reviewData,
+    error,
+    isLoading,
+  } = useQuery<GetReviewsResponse>({
+    queryKey: ["reviews", productId],
+    queryFn: fetchReviews,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-5">
+        {[1, 2, 3].map((_, index) => (
+          <div
+            key={index}
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            <h4 className="font-semibold">
+              <Skeleton width={100} />
+            </h4>
+            <Skeleton width={80} height={20} style={{ marginBottom: "8px" }} />
+            <p className="py-2">
+              <Skeleton count={3} />
+            </p>
+            <small>
+              <Skeleton width={120} />
+            </small>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (error) {
+    return <div className="text-red-500">{error.message}</div>;
+  }
   return (
     <div className="flex flex-col gap-5">
       {reviewData?.reviews?.map((review) => (
@@ -46,9 +75,8 @@ export const ReviewList = ({ productId }: Props) => {
             marginBottom: "10px",
           }}
         >
-          <h4 className="font-semibold">
-            {review.author} - Rating: {review.rating}/5
-          </h4>
+          <h4 className="font-semibold">{review.author}</h4>
+          <StartRating value={review.rating} />
           <p className="py-2">{review.content}</p>
           <small>
             Reviewed on: {new Date(review.createdAt).toLocaleDateString()}
