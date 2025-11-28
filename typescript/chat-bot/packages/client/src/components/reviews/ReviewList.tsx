@@ -1,7 +1,9 @@
-import axios from "axios";
 import StartRating from "./StartRating";
 import Skeleton from "react-loading-skeleton";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button } from "../ui/button";
+import { HiSparkles } from "react-icons/hi2";
+import { reviewsApi } from "./reviewsApi";
 
 type Props = {
   productId: number;
@@ -21,20 +23,18 @@ type GetReviewsResponse = {
 };
 
 export const ReviewList = ({ productId }: Props) => {
-  const fetchReviews = async () => {
-    const { data } = await axios.get(`/api/products/${productId}/reviews`);
-    return data;
-  };
-  const {
-    data: reviewData,
-    error,
-    isLoading,
-  } = useQuery<GetReviewsResponse>({
+  const reviewsQuery = useQuery<GetReviewsResponse>({
     queryKey: ["reviews", productId],
-    queryFn: fetchReviews,
+    queryFn: () => reviewsApi.fetchReviews(productId),
   });
 
-  if (isLoading) {
+  const summarizeMutation = useMutation({
+    mutationFn: () => reviewsApi.SummarizeReviews(productId),
+    onSuccess: () => {
+      reviewsQuery.refetch();
+    },
+  });
+  if (reviewsQuery.isLoading) {
     return (
       <div className="flex flex-col gap-5">
         {[1, 2, 3].map((_, index) => (
@@ -61,28 +61,50 @@ export const ReviewList = ({ productId }: Props) => {
       </div>
     );
   }
-  if (error) {
-    return <div className="text-red-500">{error.message}</div>;
+  if (reviewsQuery.isError) {
+    return <div className="text-red-500">{reviewsQuery.error.message}</div>;
+  }
+  if (!reviewsQuery.data?.reviews.length) {
+    return <div>No reviews available.</div>;
   }
   return (
-    <div className="flex flex-col gap-5">
-      {reviewData?.reviews?.map((review) => (
-        <div
-          key={review.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        >
-          <h4 className="font-semibold">{review.author}</h4>
-          <StartRating value={review.rating} />
-          <p className="py-2">{review.content}</p>
-          <small>
-            Reviewed on: {new Date(review.createdAt).toLocaleDateString()}
-          </small>
-        </div>
-      ))}
+    <div>
+      <div className="mb-5">
+        {reviewsQuery.data?.summary ? (
+          <p>{reviewsQuery.data.summary}</p>
+        ) : (
+          <Button
+            onClick={() => summarizeMutation.mutate()}
+            disabled={summarizeMutation.isPending}
+          >
+            <HiSparkles className="inline" /> Summaries
+          </Button>
+        )}
+        {summarizeMutation.isError && (
+          <p className="text-red-500 mt-2">
+            Error generating summary. Please try again.
+          </p>
+        )}
+      </div>
+      <div className="flex flex-col gap-5">
+        {reviewsQuery.data?.reviews?.map((review) => (
+          <div
+            key={review.id}
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            <h4 className="font-semibold">{review.author}</h4>
+            <StartRating value={review.rating} />
+            <p className="py-2">{review.content}</p>
+            <small>
+              Reviewed on: {new Date(review.createdAt).toLocaleDateString()}
+            </small>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

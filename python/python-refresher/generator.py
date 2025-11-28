@@ -55,3 +55,9 @@ stall = coffee_customers()
 next(stall)  # Start the generator
 print(stall.send("Espresso"))
 print(stall.send("Latte"))
+stall.close()  # Close the generator when done
+
+# yield -> produces a value and pauses the function
+# send() -> resumes the function and can send a value back into the generator
+# close() -> terminates the generator
+# yield from -> used to delegate part of a generator's operations to another generator
